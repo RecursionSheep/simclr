@@ -96,6 +96,7 @@ def add_contrastive_loss(hidden,
     if FLAGS.loss_func == 'NT-Logistic':
       loss_a = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_a)))
       loss_b = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_b)))
+      print(loss_a.shape, loss_b.shape)
       return loss_a + loss_b, logits_ab, labels
     else:
       loss_a = tf.reduce_mean(tf.maximum(logits_negative_a - logits_positive + MARGIN, 0))
