@@ -97,15 +97,13 @@ def add_contrastive_loss(hidden,
     if FLAGS.loss_func == 'NT-Logistic':
       loss_a = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_a)))
       loss_b = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_b)))
-      tf.losses.add_loss(loss_a)
-      tf.losses.add_loss(loss_b)
+      tf.losses.add_loss(loss_a + loss_b)
       #print(loss_a, loss_b)
       return loss_a + loss_b, logits_ab, labels
     else:
       loss_a = tf.reduce_mean(tf.maximum(logits_negative_a - logits_positive + MARGIN, 0))
       loss_b = tf.reduce_mean(tf.maximum(logits_negative_b - logits_positive + MARGIN, 0))
-      tf.losses.add_loss(loss_a)
-      tf.losses.add_loss(loss_b)
+      tf.losses.add_loss(loss_a + loss_b)
       return loss_a + loss_b, logits_ab, labels
 
   loss_a = tf.losses.softmax_cross_entropy(
