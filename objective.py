@@ -93,24 +93,27 @@ def add_contrastive_loss(hidden,
     masks_b = tf.cast(tf.less_equal(logits_b, temp_positive), tf.float32)
     logits_negative_a = tf.reduce_min(logits_a + masks_a * LARGE_NUM, axis = 1)
     logits_negative_b = tf.reduce_min(logits_b + masks_b * LARGE_NUM, axis = 1)
-    print(logits_negative_a, logits_negative_b)
+    #print(logits_negative_a, logits_negative_b)
     if FLAGS.loss_func == 'NT-Logistic':
       loss_a = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_a)))
       loss_b = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_b)))
-      print(loss_a, loss_b)
+      tf.losses.add_loss(loss_a)
+      tf.losses.add_loss(loss_b)
+      #print(loss_a, loss_b)
       return loss_a + loss_b, logits_ab, labels
     else:
       loss_a = tf.reduce_mean(tf.maximum(logits_negative_a - logits_positive + MARGIN, 0))
       loss_b = tf.reduce_mean(tf.maximum(logits_negative_b - logits_positive + MARGIN, 0))
+      tf.losses.add_loss(loss_a)
+      tf.losses.add_loss(loss_b)
       return loss_a + loss_b, logits_ab, labels
 
   loss_a = tf.losses.softmax_cross_entropy(
       labels, logits_a, weights=weights)
   loss_b = tf.losses.softmax_cross_entropy(
       labels, logits_b, weights=weights)
-  print(loss_a, loss_b)
+  #print(loss_a, loss_b)
   loss = loss_a + loss_b
-  exit()
   return loss, logits_ab, labels
 
 
