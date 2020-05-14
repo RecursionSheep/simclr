@@ -28,7 +28,7 @@ from tensorflow.compiler.tf2xla.python import xla  # pylint: disable=g-direct-te
 FLAGS = flags.FLAGS
 
 LARGE_NUM = 1e9
-
+MARGIN = 1.
 
 def add_supervised_loss(labels, logits, weights, **kwargs):
   """Compute loss for model and add it to loss collection."""
@@ -82,11 +82,30 @@ def add_contrastive_loss(hidden,
   logits_bb = logits_bb - masks * LARGE_NUM
   logits_ab = tf.matmul(hidden1, hidden2_large, transpose_b=True) / temperature
   logits_ba = tf.matmul(hidden2, hidden1_large, transpose_b=True) / temperature
+  
+  logits_a = tf.concat([logits_ab, logits_aa], 1)
+  logits_b = tf.concat([logits_ba, logits_bb], 1)
+  
+  if FLAGS.loss_func != 'NT-Xent':
+    logits_positive = tf.diag_part(logits_ab)
+    temp_positive = tf.pad(tf.expand_dims(logits_positive, -1), [[0, 0], [0, logits_a.shape[1] - 1]], "REFLECT")
+    masks_a = tf.less_equal(logits_a, temp_positive)
+    masks_b = tf.less_equal(logits_b, temp_positive)
+    logits_negative_a = tf.reduce_min(logits_a + masks_a * LARGE_NUM, axis = 1)
+    logits_negative_b = tf.reduce_min(logits_b + masks_b * LARGE_NUM, axis = 1)
+    if FLAGS.loss_func == 'NT-Logistic':
+      loss_a = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_a)))
+      loss_b = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_b)))
+      return loss_a + loss_b, logits_ab, labels
+    else:
+      loss_a = tf.reduce_mean(tf.maximum(logits_negative_a - logits_positive + MARGIN, 0))
+      loss_b = tf.reduce_mean(tf.maximum(logits_negative_b - logits_positive + MARGIN, 0))
+      return loss_a + loss_b, logits_ab, labels
 
   loss_a = tf.losses.softmax_cross_entropy(
-      labels, tf.concat([logits_ab, logits_aa], 1), weights=weights)
+      labels, logits_a, weights=weights)
   loss_b = tf.losses.softmax_cross_entropy(
-      labels, tf.concat([logits_ba, logits_bb], 1), weights=weights)
+      labels, logits_b, weights=weights)
   loss = loss_a + loss_b
 
   return loss, logits_ab, labels
