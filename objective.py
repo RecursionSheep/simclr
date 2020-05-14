@@ -91,8 +91,8 @@ def add_contrastive_loss(hidden,
     temp_positive = tf.tile(tf.expand_dims(logits_positive, -1), [1, logits_a.shape[1]])
     masks_a = tf.cast(tf.less_equal(logits_a, temp_positive), tf.float32)
     masks_b = tf.cast(tf.less_equal(logits_b, temp_positive), tf.float32)
-    logits_negative_a = tf.reduce_min(logits_a + masks_a * LARGE_NUM, axis = 1)
-    logits_negative_b = tf.reduce_min(logits_b + masks_b * LARGE_NUM, axis = 1)
+    logits_negative_a = tf.reduce_min(logits_a + masks_a * LARGE_NUM * 2, axis = 1)
+    logits_negative_b = tf.reduce_min(logits_b + masks_b * LARGE_NUM * 2, axis = 1)
     #print(logits_negative_a, logits_negative_b)
     if FLAGS.loss_func == 'NT-Logistic':
       loss_a = tf.reduce_mean(tf.log(1 + tf.exp(-logits_positive)) + tf.log(1 + tf.exp(logits_negative_a)))
