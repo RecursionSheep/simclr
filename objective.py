@@ -110,7 +110,7 @@ def add_contrastive_loss(hidden,
       labels, logits_b, weights=weights)
   print(loss_a, loss_b)
   loss = loss_a + loss_b
-
+  exit()
   return loss, logits_ab, labels
 
 
