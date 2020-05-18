@@ -34,6 +34,8 @@ if FLAGS.loss_func != 'NT-Xent':
 
 ### 实验结果
 
+测试结果如下：
+
 | Loss function | NT-Xent | NT-Logistic | Margin Triplet |
 | Top-1 accuracy | 90.21% | 79.54% | 78.92% |
 | Top-5 accuracy | 99.89% | 98.84% | 98.75% |
