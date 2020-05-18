@@ -37,8 +37,9 @@ if FLAGS.loss_func != 'NT-Xent':
 测试结果如下：
 
 | Loss function | NT-Xent | NT-Logistic | Margin Triplet |
-| Top-1 accuracy | 90.21% | 79.54% | 78.92% |
-| Top-5 accuracy | 99.89% | 98.84% | 98.75% |
+| --- | --- | --- | --- |
+| Top-1 accuracy (%) | 90.21 | 79.54 | 78.92 |
+| Top-5 accuracy (%) | 99.89 | 98.84 | 98.75 |
 
 NT-Logistic 和 Margin Triplet 两种 loss 的结果都明显不如 NT-Xent（设定的 batch size 为默认的512，我估计增大 batch size 还能提升训练性能，但是大 batch size 对单 GPU 训练来说训练时间太长了，所以没有尝试），这与论文中的结果一致。因为 NT-Xent 是将所有正负样本一起计算 cross entropy，反传梯度时考虑了所有负样本的信息。而另外两种 loss 使用 semi-hard negative mining 也只是取一个最接近的样本计算 loss。
 
